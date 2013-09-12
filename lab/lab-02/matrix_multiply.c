@@ -4,6 +4,8 @@
 #include <errno.h>
 
 #define ASSERT(x) if(!x) return 0;
+#define TOLERANCE 0.00001
+// #define TEST
 
 /*
  * Multiplies a matrix a of size m x n and a matrix b of size n x p
@@ -14,12 +16,22 @@ void matrix_multiply(float *a, float *b, float *c,
     // Zero out the output matrix
     memset((void *) c, 0, sizeof(float) * m * p);
 
-    for(size_t j = 0; j < m; j++) // Rows of c
-        for(size_t i = 0; i < p; i++) // Columns of c
+    for(size_t i = 0; i < m; i++) // Rows of c
+        for(size_t j = 0; j < p; j++) // Columns of c
             for(size_t k = 0; k < n; k++)
-                c[j * p + i] += a[i * n + k] * b[k * p + j];
+                c[i * p + j] += a[i * n + k] * b[k * p + j];
 }
 
+void matrix_print(FILE *out, float *matrix, size_t m, size_t n) {
+    for(int i = 0; i < m; i++) {
+        for(int j = 0; j < n; j++) {
+            fprintf(out, "%f ", matrix[i * n + j]);
+        }
+        fprintf(out, "\n");
+    }
+}
+
+#ifdef TEST
 /*
  * Compares two floating-point numbers within a specified tolerance. Returns
  * a number less than, equal to, or greater than zero.
@@ -70,7 +82,7 @@ int test_131() {
     float c[1];
 
     matrix_multiply(a, b, c, m, n, p);
-    ASSERT(!float_cmp(c[0], 14.0f, 0.0001));
+    ASSERT(!float_cmp(c[0], 14.0f, TOLERANCE));
     return 1;
 }
 
@@ -89,9 +101,27 @@ int test_313() {
 
     matrix_multiply(a, b, c, m, n, p);
 
-    ASSERT(!float_cmp_array(c, reference, 0.0001, 9));
+    ASSERT(!float_cmp_array(c, reference, TOLERANCE, 9));
     return 1;
 }
+
+/**
+ * Check left and right multiplication by the identity
+ */
+int test_identity() {
+    float i[4] = {1, 0,
+                  0, 1};
+    float a[4] = {1, 2,
+                  3, 4};
+    float b[4];
+
+    matrix_multiply(i, a, b, 2, 2, 2);
+    ASSERT(!float_cmp_array(b, a, TOLERANCE, 4));
+
+    return 1;
+}
+
+#endif
 
 /**
  * Reads up to nelem elements from the file pointer input into the array of
@@ -113,6 +143,7 @@ void usage(char *name, FILE *out) {
     fprintf(out, "Usage: %s <matrix> <matrix>\n", name);
 }
 
+#ifndef TEST
 int main(int argc, char **argv) {
     if(argc < 3) {
         usage(argv[0], stderr);
@@ -149,11 +180,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if(n_a != m_b) {
-        fprintf(stderr, "Matrix dimensions do not match.\n");
-        return 1;
-    }
-
+    printf("%d %d\n", m_a, n_b);
     float a_matrix[m_a][n_a];
     float b_matrix[m_b][n_b];
 
@@ -175,12 +202,12 @@ int main(int argc, char **argv) {
                     &c_matrix[0][0],
                     m_a, m_b, n_b);
 
-    for(size_t i = 0; i < m_a; i++) {
-        for(size_t j = 0; j < n_b; j++) {
-            printf("%f ", c_matrix[i][j]);
-        }
-        printf("\n");
-    }
+    matrix_print(stdout, &c_matrix[0][0], m_a, n_b);
 
     return 0;
 }
+#else
+int main() {
+    printf("%d\n", test_unary() && test_131() && test_313() && test_identity());
+}
+#endif
