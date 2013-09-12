@@ -13,13 +13,13 @@
  */
 void matrix_multiply(float *a, float *b, float *c,
                      size_t m, size_t n, size_t p) {
-    // Zero out the output matrix
-    memset((void *) c, 0, sizeof(float) * m * p);
-
     for(size_t i = 0; i < m; i++) // Rows of c
-        for(size_t j = 0; j < p; j++) // Columns of c
+        for(size_t j = 0; j < p; j++) { // Columns of c
+            float result = 0;
             for(size_t k = 0; k < n; k++)
-                c[i * p + j] += a[i * n + k] * b[k * p + j];
+                result += a[i * n + k] * b[k * p + j];
+            c[i * p + j] = result;
+        }
 }
 
 void matrix_print(FILE *out, float *matrix, size_t m, size_t n) {
@@ -118,6 +118,9 @@ int test_identity() {
     matrix_multiply(i, a, b, 2, 2, 2);
     ASSERT(!float_cmp_array(b, a, TOLERANCE, 4));
 
+    matrix_multiply(a, i, b, 2, 2, 2);
+    ASSERT(!float_cmp_array(b, a, TOLERANCE, 4));
+
     return 1;
 }
 
@@ -208,6 +211,11 @@ int main(int argc, char **argv) {
 }
 #else
 int main() {
-    printf("%d\n", test_unary() && test_131() && test_313() && test_identity());
+    if(test_unary() && test_131() && test_313() && test_identity()) {
+        printf("All tests pass.\n");
+    }
+    else {
+        printf("At least one test didn't pass.\n");
+    }
 }
 #endif
