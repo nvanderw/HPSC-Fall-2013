@@ -1,4 +1,4 @@
-GCC = gcc
+GCC = gcc -std=gnu99
 ICC = icc
 PI = pi.c
 PIEXE = pi

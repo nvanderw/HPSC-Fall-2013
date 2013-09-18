@@ -4,7 +4,6 @@
 
 #define SLICES 1e9
 #define F(X) 4/(1.0 + x * x)
-#define LOOP_FLOP 4 // Number of floating-point ops per loop iteration
 
 double current_time() {
     struct timeval time;
@@ -32,5 +31,6 @@ int main(int argc, char **argv) {
     printf("Pi: %f\n", sum * dx);
     double time = end_time - start_time;
     printf("Time: %f\n", time);
-    printf("MFLOPS: %f\n", 4 * SLICES / time / 1e6);
+    // Assuming 1 FLOP per loop iteration
+    printf("MFLOPS: %f\n", SLICES / time / 1e6);
 }
