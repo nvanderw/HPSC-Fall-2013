@@ -3,6 +3,7 @@
 #include <sys/resource.h>
 
 #define SLICES 1e9
+#define CLOCK_FREQ 2800 // MHz
 #define F(X) 4/(1.0 + x * x)
 
 double current_time() {
@@ -30,7 +31,10 @@ int main(int argc, char **argv) {
 
     printf("Pi: %f\n", sum * dx);
     double time = end_time - start_time;
-    printf("Time: %f\n", time);
+    printf("time = %f\n", time);
     // Assuming 1 FLOP per loop iteration
-    printf("MFLOPS: %f\n", SLICES / time / 1e6);
+    double mflops = SLICES / time / 1e6;
+    printf("MFLOPS = %f\n", mflops);
+    double latency = CLOCK_FREQ / mflops;
+    printf("latency = %f\n", latency);
 }
