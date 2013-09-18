@@ -43,4 +43,4 @@ if __name__ == '__main__':
     assert (C == solution).all()
 
     #Write to file
-    np.savetxt(args.c, C, fmt='%.5f')
+    np.savetxt(args.c, C, fmt='%.5f', header="{0} {1}".format(M, N), comments='')
