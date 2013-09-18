@@ -15,13 +15,11 @@
  */
 void matrix_multiply(float *a, float *b, float *c,
                      size_t m, size_t n, size_t p) {
+    memset(c, 0, sizeof(float) * m * p);
     for(size_t i = 0; i < m; i++) // Rows of c
-        for(size_t j = 0; j < p; j++) { // Columns of c
-            float result = 0;
-            for(size_t k = 0; k < n; k++)
-                result += a[i * n + k] * b[k * p + j];
-            c[i * p + j] = result;
-        }
+        for(size_t k = 0; k < n; k++)
+            for(size_t j = 0; j < p; j++) // Columns of c
+                c[i * p + j] += a[i * n + k] * b[k * p + j];
 }
 
 void matrix_print(FILE *out, float *matrix, size_t m, size_t n) {
