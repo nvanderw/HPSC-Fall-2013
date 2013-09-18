@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <sys/resource.h>
+
 #define ASSERT(x) if(!x) return 0;
 #define TOLERANCE 0.00001
 // #define TEST
@@ -148,28 +150,47 @@ void usage(char *name, FILE *out) {
 
 #ifndef TEST
 int main(int argc, char **argv) {
+    int status;
+
     if(argc < 3) {
         usage(argv[0], stderr);
         return 1;
     }
 
+    // First, bump up our stack size.
+    struct rlimit rlim;
+
+    status = getrlimit(RLIMIT_STACK, &rlim);
+    if(status == -1) {
+        int err = errno;
+        fprintf(stderr, "Could not get system resource limits. %s\n", strerror(err));
+        return 1;
+    }
+
+    rlim.rlim_cur = 1024 * 1024 * 1024; // 1 GB
+    status = setrlimit(RLIMIT_STACK, &rlim);
+    if(status == -1) {
+        int err = errno;
+        fprintf(stderr, "Could not set system stack size. %s\n", strerror(err));
+        return 1;
+    }
+
+    // Read in the file headers
     FILE *a_file, *b_file;
     int m_a, n_a, m_b, n_b;
 
     a_file = fopen(argv[1], "r");
     if(a_file == NULL) {
         int err = errno;
-        fprintf(stderr, "Could not open file %s: %s\n", argv[1], strerror(errno));
+        fprintf(stderr, "Could not open file %s: %s\n", argv[1], strerror(err));
         return 1;
     }
     b_file = fopen(argv[2], "r");
     if(b_file == NULL) {
         int err = errno;
-        fprintf(stderr, "Could not open file %s: %s\n", argv[2], strerror(errno));
+        fprintf(stderr, "Could not open file %s: %s\n", argv[2], strerror(err));
         return 1;
     }
-
-    int status;
 
     status = fscanf(a_file, "%d %d", &m_a, &n_a);
     if(status < 2) {
@@ -184,6 +205,7 @@ int main(int argc, char **argv) {
     }
 
     printf("%d %d\n", m_a, n_b);
+    // Allocate the buffers
     float a_matrix[m_a][n_a];
     float b_matrix[m_b][n_b];
 
