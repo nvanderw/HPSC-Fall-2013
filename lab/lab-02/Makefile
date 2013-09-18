@@ -1,6 +1,6 @@
-GCC = g++
+GCC = gcc
 ICC = icc
-PI = pi.cpp
+PI = pi.c
 PIEXE = pi
 
 VA = matrixA
@@ -31,8 +31,14 @@ gcc-fast: $(PI)
 	$(GCC) -O3 $(PI) -o $(PIEXE)
 	./$(PIEXE)
 
-matrix-multiply: matrix_multiply.py
+python-matrix-multiply: matrix_multiply.py
 	python matrix_multiply.py -a $(VA) -b $(VB) -c $(VC)
+
+matrix_multiply: matrix_multiply.c
+	$(GCC) -O3 -o matrix_multiply -std=gnu99 matrix_multiply.c
+
+matrix-multiply: matrix_multiply
+	./matrix_multiply $(VA) $(VB) > $(VC)
 
 cpuinfo:
 	cat /proc/cpuinfo | grep 'cpu MHz'
