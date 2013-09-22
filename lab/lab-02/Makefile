@@ -47,4 +47,4 @@ check:
 	/curc/tools/grading/scripts/check
 
 clean:
-	rm -f $(PIEXE)
+	rm -f $(PIEXE) matrix_multiply
