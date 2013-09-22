@@ -1,0 +1,20 @@
+-bash-4.1$ time ./matrix_multiply matrices/matrix.10x10.{1,2} > /dev/null
+
+real    0m0.003s
+user    0m0.000s
+sys     0m0.001s
+-bash-4.1$ time ./matrix_multiply matrices/matrix.100x100.{1,2} > /dev/null
+
+real    0m0.016s
+user    0m0.012s
+sys     0m0.002s
+-bash-4.1$ time ./matrix_multiply matrices/matrix.500x500.{1,2} > /dev/null
+
+real    0m0.408s
+user    0m0.402s
+sys     0m0.004s
+-bash-4.1$ time ./matrix_multiply matrices/matrix.1000x1000.{1,2} > /dev/null
+
+real    0m2.028s
+user    0m2.015s
+sys     0m0.007s

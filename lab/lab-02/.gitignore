@@ -4,3 +4,4 @@ matrix.*
 *.o
 *.s
 .*.swp
+*.png
