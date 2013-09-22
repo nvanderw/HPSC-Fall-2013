@@ -1,0 +1,42 @@
+-bash-4.1$ make intel-slow
+icc -std=gnu99  -O0 -no-vec pi.c -o pi
+./pi
+Pi: 3.141593
+time = 7.137063
+MFLOPS = 140.113662
+latency = 19.983776
+-bash-4.1$ make intel-novec
+icc -std=gnu99 -O2 -no-vec pi.c -o pi
+./pi
+Pi: 3.141593
+time = 7.137043
+MFLOPS = 140.114050
+latency = 19.983720
+-bash-4.1$ make intel-fast
+icc -std=gnu99 -Ofast pi.c -o pi
+./pi
+Pi: 3.141593
+time = 7.137768
+MFLOPS = 140.099818
+latency = 19.985750
+-bash-4.1$ make gcc-slow
+gcc -std=gnu99 -O0 pi.c -o pi
+./pi
+Pi: 3.141593
+time = 7.136296
+MFLOPS = 140.128716
+latency = 19.981629
+-bash-4.1$ make gcc-novec
+gcc -std=gnu99 -O2 pi.c -o pi
+./pi
+Pi: 3.141593
+time = 7.136692
+MFLOPS = 140.120940
+latency = 19.982738
+-bash-4.1$ make gcc-fast
+gcc -std=gnu99 -O3 pi.c -o pi
+./pi
+Pi: 3.141593
+time = 7.136535
+MFLOPS = 140.124025
+latency = 19.982298
