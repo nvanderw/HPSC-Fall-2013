@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <stdlib.h>
 #include "hdf5.h"
 
 namespace util
@@ -65,9 +66,16 @@ void write_hdf(const std::string &filename, double* &data, int &m_rows, int &m_c
 
 };
 
+void usage(FILE *out, char *argv0) {
+    fprintf(out, "Usage: %s <testfile>\n", argv0);
+    exit(1);
+}
 
 int main(int argc, char ** argv)
 {
+    if(argc < 2) {
+        usage(stderr, argv[0]);
+    }
 
     std::string filename = argv[1];
     std::string prefix("output.");
