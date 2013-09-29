@@ -9,7 +9,7 @@ MKL_LINK=-Wl,--start-group  $(MKLROOT)/lib/intel64/libmkl_intel_ilp64.a $(MKLROO
 MKL_INCLUDE = -openmp -DMKL_ILP64 -I$(MKLROOT)/include
 
 INCLUDE = $(HDF5_INCLUDE) $(MKL_INCLUDE)
-LINK = $(HDF5_LIB_DIR) $(HDF5_LIBS) $(MKL_LINK)
+LINK = $(HDF5_LIB_DIR) $(HDF5_LIBS) $(MKL_LINK) timing.c
 
 EXES = matrix_multiply io_text io_hdf
 
