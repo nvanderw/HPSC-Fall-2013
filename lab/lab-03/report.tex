@@ -1,0 +1,57 @@
+\documentclass{article}
+\usepackage{graphicx}
+\title{CSCI 4576 Lab 3}
+\author{Nick Vanderweit}
+
+\begin{document}
+\maketitle
+\section*{Part A}
+To measure the relative performance of storing matrices as text vs. HDF5 files,
+I modified the two C++ programs to accept arbitrarily many matrix arguments,
+and to print out timing information about each input/output file. I then ran
+the tools on input matrices of sizes ranging from 1000x1000 to 7000x7000. The
+output of running \emph{io\_hdf} and \emph{io\_txt} in sequence thus looks
+like:
+
+\begin{verbatim}
+matrix.1000x1000.txt,0.346169
+output.matrix.1000x1000.txt,0.639346
+matrix.2000x2000.txt,1.37757
+output.matrix.2000x2000.txt,2.52065
+matrix.3000x3000.txt,2.71792
+output.matrix.3000x3000.txt,5.36238
+matrix.4000x4000.txt,5.07548
+output.matrix.4000x4000.txt,9.33633
+matrix.5000x5000.txt,7.79706
+output.matrix.5000x5000.txt,14.1913
+matrix.6000x6000.txt,11.1057
+output.matrix.6000x6000.txt,20.4491
+matrix.7000x7000.txt,14.8286
+output.matrix.7000x7000.txt,28.0903
+matrix.1000x1000.h5,0.00477004
+output.matrix.1000x1000.h5,0.0737159
+matrix.2000x2000.h5,0.0118351
+output.matrix.2000x2000.h5,0.289914
+matrix.3000x3000.h5,0.024266
+output.matrix.3000x3000.h5,0.655424
+matrix.4000x4000.h5,0.0426998
+output.matrix.4000x4000.h5,1.15974
+matrix.5000x5000.h5,0.065702
+output.matrix.5000x5000.h5,1.81137
+matrix.6000x6000.h5,0.0910809
+output.matrix.6000x6000.h5,2.59894
+\end{verbatim}
+
+The first value is the name of the file, and the second value is the number of
+seconds elapsed while reading from or writing to that file. Using a small
+Python script to filter through and plot these results, we obtain:
+
+\begin{figure}[h!]
+\includegraphics[width=0.9\textwidth]{io_speed.png}
+\end{figure}
+
+Here we see that HDF5 is several orders of magnitude faster than reading/writing
+ordinary text files. In fact, comparing the 6000x6000 matrices, we can see
+from the results that reading is around 122 times faster, while writing is 7.9
+times faster.
+\end{document}
