@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
+#include "timing.h"
 
 namespace util
 {
@@ -52,27 +53,37 @@ namespace util
 };
 
 void usage(FILE *out, char *argv0) {
-    fprintf(out, "Usage: %s <testfile>\n", argv0);
-    exit(1);
+    fprintf(out, "Usage: %s <testfile1> <testfile2> ...\n", argv0);
 }
 
 int main(int argc, char ** argv)
 {
     if(argc < 2) {
         usage(stderr, argv[0]);
+        exit(1);
     }
 
-    std::string filename = argv[1];
-    std::string prefix("output.");
-    double * data = 0;
-    int m_rows, m_cols = 0;
-    
-    // Read the file
-    util::read_text(filename, data, m_rows, m_cols);
-    filename = prefix+filename;
-    
-    // Write the file
-    util::write_text(filename, data, m_rows, m_cols);
+    for(int arg = 1; arg < argc; arg++) {
+        std::string filename = argv[arg];
+        std::string prefix("output.");
+        double * data = 0;
+        int m_rows, m_cols = 0;
+
+        double start_time, stop_time;
+        get_seconds(&start_time);
+        
+        // Read the file
+        util::read_text(filename, data, m_rows, m_cols);
+        get_seconds(&stop_time);
+        std::cout << filename << "," << stop_time - start_time << std::endl;
+        filename = prefix+filename;
+        
+        // Write the file
+        get_seconds(&start_time);
+        util::write_text(filename, data, m_rows, m_cols);
+        get_seconds(&stop_time);
+        std::cout << filename << "," << stop_time - start_time << std::endl;
+    }
 
 
     return 0;

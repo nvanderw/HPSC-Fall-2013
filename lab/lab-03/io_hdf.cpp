@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdlib.h>
 #include "hdf5.h"
+#include "timing.h"
 
 namespace util
 {
@@ -68,27 +69,36 @@ void write_hdf(const std::string &filename, double* &data, int &m_rows, int &m_c
 
 void usage(FILE *out, char *argv0) {
     fprintf(out, "Usage: %s <testfile>\n", argv0);
-    exit(1);
 }
 
 int main(int argc, char ** argv)
 {
     if(argc < 2) {
         usage(stderr, argv[0]);
+        exit(1);
     }
 
-    std::string filename = argv[1];
-    std::string prefix("output.");
-    double * data = 0;
-    int m_rows, m_cols = 0;
-    
-
-    // Read the file
-    util::read_hdf(filename, data, m_rows, m_cols);
-    filename = prefix+filename;
-    
-    // Write the file
-    util::write_hdf(filename, data, m_rows, m_cols);
+    for(int arg = 1; arg < argc; arg++) {
+        std::string filename = argv[arg];
+        std::string prefix("output.");
+        double * data = 0;
+        int m_rows, m_cols = 0;
+        
+        double start_time, stop_time;
+        
+        // Read the file
+        get_seconds(&start_time);
+        util::read_hdf(filename, data, m_rows, m_cols);
+        get_seconds(&stop_time);
+        std::cout << filename << "," << stop_time - start_time << std::endl;
+        filename = prefix+filename;
+        
+        // Write the file
+        get_seconds(&start_time);
+        util::write_hdf(filename, data, m_rows, m_cols);
+        get_seconds(&stop_time);
+        std::cout << filename << "," << stop_time - start_time << std::endl;
+    }
 
 
     return 0;
