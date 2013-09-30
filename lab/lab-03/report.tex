@@ -10,36 +10,37 @@ To measure the relative performance of storing matrices as text vs. HDF5 files,
 I modified the two C++ programs to accept arbitrarily many matrix arguments,
 and to print out timing information about each input/output file. I then ran
 the tools on input matrices of sizes ranging from 1000x1000 to 7000x7000. The
-output of running \emph{io\_hdf} and \emph{io\_txt} in sequence thus looks
-like:
+raw output of running \emph{io\_hdf} and \emph{io\_txt} in sequence is:
 
 \begin{verbatim}
-matrix.1000x1000.txt,0.346169
-output.matrix.1000x1000.txt,0.639346
-matrix.2000x2000.txt,1.37757
-output.matrix.2000x2000.txt,2.52065
-matrix.3000x3000.txt,2.71792
-output.matrix.3000x3000.txt,5.36238
-matrix.4000x4000.txt,5.07548
-output.matrix.4000x4000.txt,9.33633
-matrix.5000x5000.txt,7.79706
-output.matrix.5000x5000.txt,14.1913
-matrix.6000x6000.txt,11.1057
-output.matrix.6000x6000.txt,20.4491
-matrix.7000x7000.txt,14.8286
-output.matrix.7000x7000.txt,28.0903
-matrix.1000x1000.h5,0.00477004
-output.matrix.1000x1000.h5,0.0737159
-matrix.2000x2000.h5,0.0118351
-output.matrix.2000x2000.h5,0.289914
-matrix.3000x3000.h5,0.024266
-output.matrix.3000x3000.h5,0.655424
-matrix.4000x4000.h5,0.0426998
-output.matrix.4000x4000.h5,1.15974
-matrix.5000x5000.h5,0.065702
-output.matrix.5000x5000.h5,1.81137
-matrix.6000x6000.h5,0.0910809
-output.matrix.6000x6000.h5,2.59894
+matrix.1000x1000.txt,0.398397
+output.matrix.1000x1000.txt,0.546932
+matrix.2000x2000.txt,1.56324
+output.matrix.2000x2000.txt,2.17663
+matrix.3000x3000.txt,3.30367
+output.matrix.3000x3000.txt,4.5914
+matrix.4000x4000.txt,5.75687
+output.matrix.4000x4000.txt,7.96865
+matrix.5000x5000.txt,8.80977
+output.matrix.5000x5000.txt,12.3179
+matrix.6000x6000.txt,12.5684
+output.matrix.6000x6000.txt,17.6285
+matrix.7000x7000.txt,16.8648
+output.matrix.7000x7000.txt,23.9092
+matrix.1000x1000.h5,0.00509501
+output.matrix.1000x1000.h5,0.0210981
+matrix.2000x2000.h5,0.0118842
+output.matrix.2000x2000.h5,0.0767601
+matrix.3000x3000.h5,0.0250492
+output.matrix.3000x3000.h5,0.170424
+matrix.4000x4000.h5,0.0433538
+output.matrix.4000x4000.h5,0.302199
+matrix.5000x5000.h5,0.0668669
+output.matrix.5000x5000.h5,0.468541
+matrix.6000x6000.h5,0.0956151
+output.matrix.6000x6000.h5,0.668851
+matrix.7000x7000.h5,0.129877
+output.matrix.7000x7000.h5,0.916892
 \end{verbatim}
 
 The first value is the name of the file, and the second value is the number of
@@ -51,7 +52,58 @@ Python script to filter through and plot these results, we obtain:
 \end{figure}
 
 Here we see that HDF5 is several orders of magnitude faster than reading/writing
-ordinary text files. In fact, comparing the 6000x6000 matrices, we can see
-from the results that reading is around 122 times faster, while writing is 7.9
-times faster.
+ordinary text files. In fact, comparing the 7000x7000 matrices, we can see
+from the results that reading using HDF5 is about 130 times faster than text,
+while writing is 26 times faster.
+
+\section*{Part B}
+For this part, no modification of either matrix multiplication routine was
+necessary. I simply wrote two scripts which generate matrices of various
+sizes, wrap a call to the matrix multiplier in either the \emph{time} or
+\emph{psrun} commands, and printed the output comma-separated.
+
+The matrix results were as follows:
+
+\begin{verbatim}
+naive,1000,1.49,1.47
+opt,1000,0.22,0.90
+naive,2000,7.29,7.24
+opt,2000,0.45,2.28
+naive,3000,19.90,19.80
+opt,3000,1.54,7.50
+naive,4000,42.13,41.96
+opt,4000,1.95,14.18
+naive,5000,80.13,79.82
+opt,5000,3.72,26.68
+naive,6000,130.49,130.01
+opt,6000,4.90,43.17
+naive,7000,197.63,196.93
+opt,7000,7.77,66.93
+\end{verbatim}
+
+The columns specify which routine is being run, the dimension if each square
+matrix, wall-clock time, and CPU time spent in usermode.
+
+\begin{figure}[h!]
+\includegraphics[width=0.9\textwidth]{matrix_speed.png}
+\end{figure}
+
+We can make some interesting inferences just from this plot. For one, it is
+obvious that the optimized matrix multiply using MKL routines has much better
+throughput. On the 7000x7000 matrix, the optimized binary performs about three
+times as well in terms of CPU time, and about 25 times as well in terms of
+wall clock time.
+
+We can also note, by the fact that the optimized and naive usermode times form
+parallel lines in a log-log plot, that the amount of computation is growing
+asymptotically with the same polynomial.
+
+L3 cache misses from the same parameters are summarized by the plot below.
+We can see that, with large enough matrices, the optimized Intel code has
+several orders of magnitude fewer cache misses.
+
+\begin{figure}[h!]
+\includegraphics[width=0.9\textwidth]{matrix_cache.png}
+\end{figure}
+
 \end{document}
