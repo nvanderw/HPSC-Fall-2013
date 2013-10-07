@@ -7,7 +7,10 @@
 
 #include <sys/resource.h>
 
-#define BLOCKSIZE 1
+#ifndef BLOCKSIZE
+#define BLOCKSIZE 100
+#endif
+
 #define ASSERT(x) if(!x) return 0;
 #define TOLERANCE 0.00001
 // #define TEST

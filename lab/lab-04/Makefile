@@ -1,2 +1,2 @@
 run:
-	./matrix_multiply $(A) $(B) $(C)
+	@./matrix_multiply $(A) $(B) $(C)
