@@ -9,4 +9,7 @@ for n in $ns; do
     dot=`echo "$results" | grep dot | awk '{print $2}'`
     your_time=`echo "$results" | grep your | awk '{print $3}'`
     echo "$n, $your_time, $dot"
+    psrun ./matrix_multiply matrixA.h5 matrixB.h5 output.h5
+    mv *.xml output.$n.$n
+    rm output.h5
 done
