@@ -22,9 +22,14 @@ If we wanted to test your code based on the example from lecture, we will typing
 
 	make run T=2 B=1 R=2 L=1 I=10 N=4
 
-Your output should be a single line of space separated values that represent the solution.  In the previous example, this would look like the following:
+Your output should be a matrix that represent the solution.  In the previous example, this would look like the following:
 
-	1.24951172  1.49951172  1.74951172  1.49951172
+	2.0,  2.0,  2.0,  1.0 
+	2.0,  1.75,  1.5,  1.0
+	2.0,  1.5,  1.25,  1.0
+	2.0,  1.0,  1.0,  1.0 
+	
+Note that the `N=4` includes the entire matrix and that the boundary conditions are included in the output.
 
 You should use a value of `epsilon=1e-5` as a stopping criteria.
 
