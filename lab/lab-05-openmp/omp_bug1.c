@@ -23,16 +23,18 @@ for (i=0; i < N; i++)
   a[i] = b[i] = i * 1.0;
 chunk = CHUNKSIZE;
 
-#pragma omp parallel for     \
+#pragma omp parallel
+  {
+  tid = omp_get_thread_num();
+  #pragma omp parallel for     \
   shared(a,b,c,chunk)            \
   private(i,tid)             \
   schedule(static,chunk)
-  {
-  tid = omp_get_thread_num();
   for (i=0; i < N; i++)
     {
     c[i] = a[i] + b[i];
     printf("tid= %d i= %d c[i]= %f\n", tid, i, c[i]);
     }
   }  /* end of parallel for construct */
+}
   
