@@ -24,7 +24,7 @@ Can you also make it so that it also works with a non-openmp compiler
 - The first program doesn't compile.  Getting it to compile is sufficient.
 - The next three either seg-fault or give the wrong answer.  You can figure out the correct results by runnign the code on a single thread.
 
-        export OMP_NUMP_THREADS=1
+        export OMP_NUM_THREADS=1
 
         
 - The second program computes the wrong results
