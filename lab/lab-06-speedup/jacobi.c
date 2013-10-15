@@ -3,6 +3,9 @@
 #include <string.h>
 #include <sys/resource.h>
 
+#ifndef TOLERANCE
+#define TOLERANCE 1e-7
+#endif
 double calc_error(double *A, size_t n) {
     double result = 0;
     #pragma omp parallel for reduction(+:result)
@@ -117,7 +120,7 @@ int main(int argc, char **argv) {
     double A[n][n];
     init_jacobi(&A[0][0], n, left, right, top, bottom);
 
-    int convergence = jacobi(&A[0][0], n, max_k, 1e-5);
+    int convergence = jacobi(&A[0][0], n, max_k, TOLERANCE);
     if(convergence)
         printf("Converged\n");
     else
