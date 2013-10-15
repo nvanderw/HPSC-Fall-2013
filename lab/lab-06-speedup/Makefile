@@ -10,7 +10,7 @@ run: jacobi
 	./jacobi $(T) $(B) $(L) $(R) $(I) $(N)
 
 matrix_multiply: matrix_multiply.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -o $@ $< -lhdf5
 
 clean:
 	rm -f *.o jacobi matrix_multiply
