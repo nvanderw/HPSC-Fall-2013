@@ -20,14 +20,11 @@ void matrix_multiply_block(double *a, double *b, double *c,
                            size_t m, size_t n, size_t p,
                            size_t block_size) {
     memset(c, 0, sizeof(float) * m * p);
-    #pragma omp parallel
-    {
-        #pragma omp parallel for
-        for(size_t i = 0; i < m; i++) // Rows of c
-            for(size_t k = 0; k < n; k++)
-                for(size_t j = 0; j < p; j++) // Columns of c
-                    c[i * p + j] += a[i * n + k] * b[k * p + j];
-    }
+    #pragma omp parallel for
+    for(size_t i = 0; i < m; i++) // Rows of c
+        for(size_t k = 0; k < n; k++)
+            for(size_t j = 0; j < p; j++) // Columns of c
+                c[i * p + j] += a[i * n + k] * b[k * p + j];
 }
 
 /*
