@@ -3,11 +3,11 @@
 #include <string.h>
 #include <sys/resource.h>
 
-double sum(double *A, size_t n) {
+double calc_error(double *A, size_t n) {
     double result = 0;
     #pragma omp parallel for reduction(+:result)
     for(size_t i = 0; i < n; i++)
-        result += A[i];
+        result += A[i] * A[i];
 
     return result / n;
 }
@@ -30,7 +30,7 @@ int jacobi(double *A, size_t n, int max_k, double eps) {
     double *old = &B[0];
     double *tmp;
     
-    double error[n][n];
+    double delta[n][n];
 
     for(int k = 0; k < max_k; k++) {
         // Update the interior values
@@ -39,10 +39,10 @@ int jacobi(double *A, size_t n, int max_k, double eps) {
             for(size_t j = 1; j < n - 1; j++) {
                 new[i * n + j] = (old[(i - 1) * n + j] + old[(i + 1) * n + j]
                                 + old[i * n + (j - 1)] + old[i * n + (j + 1)])/4;
-                error[i][j] = new[i * n + j] - old[i * n + j];
+                delta[i][j] = new[i * n + j] - old[i * n + j];
             }
 
-        double e = sum(&error[0][0], n * n);
+        double e = calc_error(&delta[0][0], n * n);
         if(e < eps) {
             if(new != A)
                 memcpy(A, new, sizeof(double) * n * n);
