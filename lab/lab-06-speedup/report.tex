@@ -1,0 +1,45 @@
+\documentclass{article}
+
+\usepackage{graphicx}
+
+\title{HPSC Lab 6}
+\author{Nick Vanderweit}
+
+\begin{document}
+\maketitle
+
+In this lab, I measured how the performance of OpenMP-enabled codes scales with
+the number of threads used. To do this, I measured the time to multiply two
+1000x1000 matrices, and to numerically solve a boundary value problem for the
+heat equation with the same matrix dimensions.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{speedup.png}
+\end{figure}
+
+As we can see for these speedup results, the computation done by the
+matrix multiply code seems to scale about linearly with the number of threads,
+while the Jacobi code has more diminishing returns.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{efficiency.png}
+\end{figure}
+
+The efficiency plot shows this idea in more detail. We can see that, after
+six to eight threads, each thread has little impact on the overall performance
+of the Jacobi algorithm, while matrix multiply scales effectively to many
+more threads.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{kf.png}
+\end{figure}
+
+Finally, we investigate the experimental serial fraction as determined by the
+Karp-Flatt metric. We see that a little over 45\% of the Jacobi iteration is
+serial, while the matrix multiply requires only around 10\% serial computation
+for this problem size.
+
+\end{document}
