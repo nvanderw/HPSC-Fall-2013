@@ -86,7 +86,7 @@ void init_jacobi(double *A, size_t n, double left, double right, double top, dou
 void print_matrix(double *A, size_t m, size_t n) {
     for(size_t i = 0; i < m; i++) {
         for(size_t j = 0; j < n; j++) {
-            printf("%f ", A[i * n + j]);
+            printf("%f,", A[i * n + j]);
         }
         printf("\n");
     }
@@ -121,9 +121,9 @@ int main(int argc, char **argv) {
     init_jacobi(&A[0][0], n, left, right, top, bottom);
 
     int convergence = jacobi(&A[0][0], n, max_k, TOLERANCE);
-    if(convergence)
-        printf("Converged\n");
-    else
-        printf("Did not converge\n");
+    // if(convergence)
+    //     printf("Converged\n");
+    // else
+    //     printf("Did not converge\n");
     print_matrix(&A[0][0], n, n);
 }
