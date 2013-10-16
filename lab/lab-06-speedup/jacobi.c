@@ -85,10 +85,10 @@ void init_jacobi(double *A, size_t n, double left, double right, double top, dou
 
 void print_matrix(double *A, size_t m, size_t n) {
     for(size_t i = 0; i < m; i++) {
-        for(size_t j = 0; j < n; j++) {
-            printf("%f,", A[i * n + j]);
+        for(size_t j = 0; j < n - 1; j++) {
+            printf("%f, ", A[i * n + j]);
         }
-        printf("\n");
+        printf("%f\n", A[i * n + n - 1]);
     }
 }
 
