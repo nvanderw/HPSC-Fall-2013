@@ -32,26 +32,55 @@ def get_speedup(results_matrix):
     return np.array(list(_inner()))
 
 def get_efficiency(results_matrix):
-    speedup = get_speedup(results_matrix)
+    speedup_matrix = get_speedup(results_matrix)
     
     def _inner():
-        for (nthreads, speedup) in results_matrix:
+        for (nthreads, speedup) in speedup_matrix:
             yield (nthreads, speedup / nthreads)
 
     return np.array(list(_inner()))
 
 def main():
+    jacobi_averaged_matrix, multiply_averaged_matrix = None, None
     with open("jacobi_results.txt", "r") as jacobi_file:
         jacobi_results = (parse_results(line.rstrip().split(',')) for line in lines(jacobi_file))
         jacobi_averaged_matrix = np.array(list(average_results(jacobi_results, 5)))
-        jacobi_speedup = get_speedup(jacobi_averaged_matrix)
-        jacobi_efficiency = get_efficiency(jacobi_averaged_matrix)
 
-        fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1)
+    with open("matrix_results.txt", "r") as matrix_file:
+        multiply_results = (parse_results(line.rstrip().split(',')) for line in lines(matrix_file))
+        multiply_averaged_matrix = np.array(list(average_results(multiply_results, 5)))
 
-        ax.plot(jacobi_speedup[:,0], jacobi_speedup[:,1], marker="o")
-        plt.show()
+    jacobi_speedup = get_speedup(jacobi_averaged_matrix)
+    jacobi_efficiency = get_efficiency(jacobi_averaged_matrix)
+
+    multiply_speedup = get_speedup(multiply_averaged_matrix)
+    multiply_efficiency = get_efficiency(multiply_averaged_matrix)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.set_title("Speedup vs. Number of threads")
+    ax.set_xlabel("Number of threads")
+    ax.set_ylabel("Speedup")
+
+    ax.plot(jacobi_speedup[:,0], jacobi_speedup[:,1], marker="o", label="Jacobi iteration")
+    ax.plot(multiply_speedup[:,0], multiply_speedup[:,1], marker="o", label="Matrix multiply")
+
+    plt.legend(loc=2)
+    plt.savefig("speedup.png", dpi=400)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.set_title("Efficiency vs. Number of threads")
+    ax.set_xlabel("Number of threads")
+    ax.set_ylabel("Efficiency")
+
+    ax.plot(jacobi_efficiency[:,0], jacobi_efficiency[:,1], marker="o", label="Jacobi iteration")
+    ax.plot(multiply_efficiency[:,0], multiply_efficiency[:,1], marker="o", label="Matrix multiply")
+
+    plt.legend()
+    plt.savefig("efficiency.png", dpi=400)
 
 if __name__ == '__main__':
     main()
