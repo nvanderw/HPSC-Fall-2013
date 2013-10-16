@@ -24,3 +24,6 @@ check: compare_jacobi.py
 
 clean:
 	rm -f *.o jacobi matrix_multiply
+
+report.pdf:
+	pdflatex report.tex

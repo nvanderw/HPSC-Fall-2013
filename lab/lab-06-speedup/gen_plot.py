@@ -40,6 +40,15 @@ def get_efficiency(results_matrix):
 
     return np.array(list(_inner()))
 
+def get_karp_flatt(results_matrix):
+    speedup_matrix = get_speedup(results_matrix)
+
+    def _inner():
+        for (nthreads, speedup) in speedup_matrix:
+            if nthreads > 1:
+                yield (nthreads, (1/speedup - 1/nthreads) / (1 - 1 / nthreads))
+    return np.array(list(_inner()))
+
 def main():
     jacobi_averaged_matrix, multiply_averaged_matrix = None, None
     with open("jacobi_results.txt", "r") as jacobi_file:
@@ -52,9 +61,11 @@ def main():
 
     jacobi_speedup = get_speedup(jacobi_averaged_matrix)
     jacobi_efficiency = get_efficiency(jacobi_averaged_matrix)
+    jacobi_kf = get_karp_flatt(jacobi_averaged_matrix)
 
     multiply_speedup = get_speedup(multiply_averaged_matrix)
     multiply_efficiency = get_efficiency(multiply_averaged_matrix)
+    multiply_kf = get_karp_flatt(multiply_averaged_matrix)
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
@@ -81,6 +92,19 @@ def main():
 
     plt.legend()
     plt.savefig("efficiency.png", dpi=400)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    ax.set_title("Experimental serial fraction vs. Number of threads")
+    ax.set_xlabel("Number of threads")
+    ax.set_ylabel("Serial fraction")
+
+    ax.plot(jacobi_kf[:,0], jacobi_kf[:,1], marker="o", label="Jacobi iteration")
+    ax.plot(multiply_kf[:,0], multiply_kf[:,1], marker="o", label="Matrix multiply")
+
+    plt.legend()
+    plt.savefig("kf.png", dpi=400)
 
 if __name__ == '__main__':
     main()
