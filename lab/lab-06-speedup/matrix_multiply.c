@@ -217,7 +217,7 @@ int test_block_random() {
 size_t load_array(FILE *input, double *outarray, size_t nelem) {
     size_t count;
     for(count = 0; count < nelem; count++) {
-        int result = fscanf(input, "%f ", &outarray[count]);
+        int result = fscanf(input, "%lf ", &outarray[count]);
         if(result < 1) break;
     }
 
