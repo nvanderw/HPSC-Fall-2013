@@ -97,17 +97,8 @@ With `N=20`
 
 ## What to turn in?
 
-Please use the new submission instructions. Your directory is located here:
+Please see [lab 10]() for new submission instructions.
 
-    /curc/tools/grading/assignments/assignment-06/$USER
-
-At the minimum, you should have:
-
-- **Makefile**.  Include `make` to build your code, `make clean` to remove object files and executables, and `make run` as described above.
-- **All the source code** (at least one source file) for the heat equation.
-- **A report in PDF format**.
-
-Please do not check in a tar file.  Place all file at the root of your directory `assignment-06/$USER`.
 
 
 
