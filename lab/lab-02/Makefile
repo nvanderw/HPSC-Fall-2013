@@ -8,27 +8,27 @@ VB = matrixB
 VC = matrixC
 
 intel-slow: $(PI)
-	$(ICC)  -O0 -no-vec $(PI) -o $(PIEXE)
+	$(ICC)  -O0 -no-vec $(PI) -o $(PIEXE) -std=gnu99
 	./$(PIEXE)
 
 intel-novec: $(PI)
-	$(ICC) -O2 -no-vec $(PI) -o $(PIEXE)
+	$(ICC) -O2 -no-vec $(PI) -o $(PIEXE) -std=gnu99
 	./$(PIEXE)
 
 intel-fast: $(PI)
-	$(ICC) -Ofast $(PI) -o $(PIEXE)
+	$(ICC) -Ofast $(PI) -o $(PIEXE) -std=gnu99
 	./$(PIEXE)
 
 gcc-slow: $(PI)
-	$(GCC) -O0 $(PI) -o $(PIEXE)
+	$(GCC) -O0 $(PI) -o $(PIEXE) -std=gnu99
 	./$(PIEXE)
 
 gcc-novec: $(PI)
-	$(GCC) -O2 $(PI) -o $(PIEXE)
+	$(GCC) -O2 $(PI) -o $(PIEXE) -std=gnu99
 	./$(PIEXE)	
 
 gcc-fast: $(PI)
-	$(GCC) -O3 $(PI) -o $(PIEXE)
+	$(GCC) -O3 $(PI) -o $(PIEXE) -std=gnu99
 	./$(PIEXE)
 
 python-matrix-multiply: matrix_multiply.py
