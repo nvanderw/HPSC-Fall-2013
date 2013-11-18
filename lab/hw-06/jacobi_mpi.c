@@ -22,7 +22,7 @@ struct jacobi_parameters {
 };
 
 void usage(FILE *out, char *argv0) {
-    fprintf(out, "Usage: %s <Top> <Bottom> <Left> <Right> <Iters> <N>\n", argv0);
+    fprintf(out, "Usage: %s <Top> <Bottom> <Left> <Right> <Iters> <N> <outfile.csv>\n", argv0);
 }
 
 void update_boundary_values(double *A, // Matrix, including boundary (ghost) layer
@@ -160,12 +160,12 @@ int update_interior_values(double *out, const double *A, size_t n, double eps) {
     return converged;
 }
 
-void print_matrix(const double *A, size_t m, size_t n) {
+void print_matrix(FILE *out, const double *A, size_t m, size_t n) {
     for(size_t i = 0; i < m; i++) {
         for(size_t j = 0; j < n - 1; j++) {
-            printf("%f, ", A[i * n + j]);
+            fprintf(out, "%f, ", A[i * n + j]);
         }
-        printf("%f\n", A[i * n + n - 1]);
+        fprintf(out, "%f\n", A[i * n + n - 1]);
     }
 }
 
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
 
     struct jacobi_parameters params;
 
-    if(argc < 7) {
+    if(argc < 8) {
         if(rank == RANK_MASTER)
             usage(stderr, argv[0]);
         MPI_Finalize();
@@ -201,6 +201,8 @@ int main(int argc, char **argv) {
         params.max_k  = atoi(argv[5]);
         params.n      = atoi(argv[6]);
     }
+
+    char *outpath = argv[7];
 
     // Give everyone the parameters
     MPI_Bcast((void*) &params, sizeof(params), MPI_BYTE, RANK_MASTER, MPI_COMM_WORLD);
@@ -295,7 +297,9 @@ int main(int argc, char **argv) {
             }
         }
 
-        print_matrix(&result_matrix[0][0], params.n, params.n);
+        FILE *out = fopen(outpath, "w");
+        print_matrix(out, &result_matrix[0][0], params.n, params.n);
+        fclose(out);
     }
 
 

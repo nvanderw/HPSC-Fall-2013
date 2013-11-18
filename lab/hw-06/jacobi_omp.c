@@ -81,17 +81,17 @@ void init_jacobi(double *A, size_t n, double left, double right, double top, dou
     }
 }
 
-void print_matrix(double *A, size_t m, size_t n) {
+void print_matrix(FILE *out, double *A, size_t m, size_t n) {
     for(size_t i = 0; i < m; i++) {
         for(size_t j = 0; j < n - 1; j++) {
-            printf("%f, ", A[i * n + j]);
+            fprintf(out, "%f, ", A[i * n + j]);
         }
-        printf("%f\n", A[i * n + n - 1]);
+        fprintf(out, "%f\n", A[i * n + n - 1]);
     }
 }
 
 void usage(FILE *out, char *argv0) {
-    fprintf(out, "Usage: %s <Top> <Bottom> <Left> <Right> <Iters> <N>\n", argv0);
+    fprintf(out, "Usage: %s <Top> <Bottom> <Left> <Right> <Iters> <N> <outfile.csv>\n", argv0);
 }
 
 int main(int argc, char **argv) {
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
     rlim.rlim_cur = 1024 * 1024 * 1024;
     setrlimit(RLIMIT_STACK, &rlim);
 
-    if(argc != 7) {
+    if(argc != 8) {
         usage(stderr, argv[0]);
         exit(1);
     }
@@ -114,6 +114,8 @@ int main(int argc, char **argv) {
     right = atof(argv[4]);
     max_k = atoi(argv[5]);
     n = atoi(argv[6]);
+    const char *outpath = argv[7];
+
 
     double A[n][n];
     init_jacobi(&A[0][0], n, left, right, top, bottom);
@@ -123,5 +125,9 @@ int main(int argc, char **argv) {
     //     printf("Converged\n");
     // else
     //     printf("Did not converge\n");
-    print_matrix(&A[0][0], n, n);
+    //
+    
+    FILE *outfile = fopen(outpath, "w");
+    print_matrix(outfile, &A[0][0], n, n);
+    fclose(outfile);
 }

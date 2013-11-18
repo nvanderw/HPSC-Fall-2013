@@ -20,13 +20,13 @@ simpsons: mpi_simpsons
 	mpirun -np $(P) mpi_simpsons $(L) $(U) $(F) $(N)
 
 openmp: jacobi_omp
-	./jacobi_omp $(T) $(B) $(L) $(R) $(I) $(N)
+	./jacobi_omp $(T) $(B) $(L) $(R) $(I) $(N) $(O)
 
 mpi: jacobi_mpi
-	mpirun -np $(P) jacobi_mpi $(T) $(B) $(L) $(R) $(I) $(N)
+	mpirun -np $(P) jacobi_mpi $(T) $(B) $(L) $(R) $(I) $(N) $(O)
 
 hybrid: jacobi_hybrid
-	mpirun -np $(P) -bynode -bind-to-core jacobi_hybrid $(T) $(B) $(L) $(R) $(I) $(N)
+	mpirun -np $(P) -bynode -bind-to-core jacobi_hybrid $(T) $(B) $(L) $(R) $(I) $(N) $(O)
 
 clean:
 	rm -f $(EXECUTABLES)
