@@ -27,12 +27,15 @@ void usage(FILE *out, char *argv0) {
 
 void update_boundary_values(double *A, // Matrix, including boundary (ghost) layer
                             size_t n,  // A is n x n, so this *includes* the ghost layer
-                            const int *coords, // Array of length 2
+                            const int *coords, // Array of length 2 in (row, col)
                             const int *threads, // Array of length 2
                             MPI_Comm cart_comm, // Cartesian communicator
                             const struct jacobi_parameters *params) {
 
-    if(coords[0] == 0) { // We're on the left boundary
+    int row = coords[0];
+    int col = coords[1];
+
+    if(col == 0) { // We're on the left boundary
         double left = params->left;
         for(size_t i = 0; i < n; i++)
             A[i * n] = left;
@@ -40,7 +43,7 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
 
     else { // Not on left boundary; swap boundary info with left neighbor
         int us, them; // And after all we're only ordinary men
-        MPI_Cart_shift(cart_comm, 0, -1, &us, &them);
+        MPI_Cart_shift(cart_comm, 1, -1, &us, &them);
 
         MPI_Request handle;
         // Start asynchronous receive of our neighbor's right boundary
@@ -48,7 +51,7 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
         double our_left_boundary[n];
 
         for(size_t i = 0; i < n; i++)
-            our_left_boundary[i] = A[i * n];
+            our_left_boundary[i] = A[i * n + 1];
 
         MPI_Irecv(&their_right_boundary[0], n, MPI_DOUBLE,
                   them, MPI_ANY_TAG, cart_comm, &handle);
@@ -57,10 +60,10 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
         MPI_Wait(&handle, MPI_STATUS_IGNORE);
 
         for(size_t i = 0; i < n; i++)
-            A[i * n] = their_right_boundary[n];
+            A[i * n] = their_right_boundary[i];
     }
 
-    if(coords[0] == threads[0] - 1) { // We're on the right
+    if(col == threads[0] - 1) { // We're on the right
         double right = params->right;
         for(size_t i = 0; i < n; i++)
             A[i * n + n - 1] = right;
@@ -68,14 +71,14 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
 
     else { // Not on right boundary; swap info with right neighbor
         int us, them; // Haven't you heard it's a battle of words?
-        MPI_Cart_shift(cart_comm, 0, 1, &us, &them);
+        MPI_Cart_shift(cart_comm, 1, 1, &us, &them);
 
         MPI_Request handle;
         double their_left_boundary[n];
         double our_right_boundary[n];
 
         for(size_t i = 0; i < n; i++)
-            our_right_boundary[i] = A[i * n + n - 1];
+            our_right_boundary[i] = A[i * n + n - 2];
 
         MPI_Irecv(&their_left_boundary[0], n, MPI_DOUBLE,
                   them, MPI_ANY_TAG, cart_comm, &handle);
@@ -84,11 +87,10 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
         MPI_Wait(&handle, MPI_STATUS_IGNORE);
 
         for(size_t i = 0; i < n; i++)
-            A[i * n + n - 1] = their_left_boundary[n];
+            A[i * n + n - 1] = their_left_boundary[i];
     }
 
-
-    if(coords[1] == 0) { // We're on the top boundary
+    if(row == 0) { // We're on the top boundary
         double top = params->top;
         for(size_t i = 0; i < n; i++)
             A[i] = top;
@@ -97,23 +99,26 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
     else { // Receive value from above
         int us, them; // With, without, and who'll deny it's what the
                       // fighting's all about?
-        MPI_Cart_shift(cart_comm, 1, -1, &us, &them);
+        MPI_Cart_shift(cart_comm, 0, -1, &us, &them);
 
         MPI_Request handle;
         double their_bottom_boundary[n];
         double our_top_boundary[n];
 
         for(size_t i = 0; i < n; i++)
-            our_top_boundary[i] = A[i];
+            our_top_boundary[i] = A[n + i];
 
         MPI_Irecv(&their_bottom_boundary[0], n, MPI_DOUBLE,
                   them, MPI_ANY_TAG, cart_comm, &handle);
         MPI_Send(&our_top_boundary[0], n, MPI_DOUBLE, them,
                  0, cart_comm);
         MPI_Wait(&handle, MPI_STATUS_IGNORE);
+
+        for(size_t i = 0; i < n; i++)
+            A[i] = their_bottom_boundary[i];
     }
 
-    if(coords[1] == threads[1] - 1) { // We're on the bottom
+    if(row == threads[1] - 1) { // We're on the bottom
         double bottom = params->bottom;
         for(size_t i = 0; i < n; i++)
             A[n * (n - 1) + i] = bottom;
@@ -121,20 +126,23 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
 
     else { // Receive value from below
         int us, them; // ...
-        MPI_Cart_shift(cart_comm, 1, 1, &us, &them);
+        MPI_Cart_shift(cart_comm, 0, 1, &us, &them);
 
         MPI_Request handle;
         double their_top_boundary[n];
         double our_bottom_boundary[n];
 
         for(size_t i = 0; i < n; i++)
-            our_bottom_boundary[i] = A[n * (n - 1) + i];
+            our_bottom_boundary[i] = A[n * (n - 2) + i];
 
         MPI_Irecv(&their_top_boundary[0], n, MPI_DOUBLE,
                   them, MPI_ANY_TAG, cart_comm, &handle);
         MPI_Send(&our_bottom_boundary[0], n, MPI_DOUBLE, them,
                 0, cart_comm);
         MPI_Wait(&handle, MPI_STATUS_IGNORE);
+
+        for(size_t i = 0; i < n; i++)
+            A[n * (n - 1) + i] = their_top_boundary[i];
     }
 }
 
@@ -214,7 +222,7 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(cart_comm, &cart_rank);
 
     // Figure out our own coordinates
-    int coords[2];
+    int coords[2]; // (row, col)
     MPI_Cart_coords(cart_comm, cart_rank, 2, coords);
 
     // Allocate enough space for our window plus the boundary values on
@@ -234,23 +242,23 @@ int main(int argc, char **argv) {
         int all_converged;
 
         MPI_Allreduce(&converged, &all_converged, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
-        if(all_converged) {
-            if(rank == RANK_MASTER)
-                printf("Terminated early!\n");
-            break;
-        }
+        // if(all_converged) {
+        //     if(rank == RANK_MASTER)
+        //         printf("Terminated early!\n");
+        //     break;
+        // }
     }
 
-    // for(int i = 0; i < procs_per_dim; i++) {
-    //     for(int j = 0; j < procs_per_dim; j++) {
-    //         if((coords[0] == j) && (coords[1] == i)) {
-    //             printf("(x, y) = (%d, %d):\n", coords[0], coords[1]);
-    //             
-    //             print_matrix(&A[0][0], window_size + 2, window_size + 2);
-    //         }
-    //         MPI_Barrier(cart_comm);
-    //     }
-    // }
+    for(int i = 0; i < procs_per_dim; i++) {
+        for(int j = 0; j < procs_per_dim; j++) {
+            if((coords[0] == i) && (coords[1] == j)) {
+                printf("(row, col) = (%d, %d):\n", coords[0], coords[1]);
+                
+                print_matrix(&A[0][0], window_size + 2, window_size + 2);
+            }
+            MPI_Barrier(cart_comm);
+        }
+    }
 
 
     // Now the iterations are done and we need to gather the interior values
@@ -270,13 +278,12 @@ int main(int argc, char **argv) {
 
     
     // Have the root gather all interior values
-    int num_interiors = nprocs * (n - 2) * (n - 2);
-    double all_interiors[num_interiors];
-    MPI_Gather(&interiors[0][0], (n - 2) * (n - 2), MPI_DOUBLE,
+    int num_interiors = (n - 2) * (n - 2); // Number of interior values for each process
+    double all_interiors[nprocs * num_interiors];
+
+    MPI_Gather(&interiors[0][0], num_interiors, MPI_DOUBLE,
                 &all_interiors[0], num_interiors, MPI_DOUBLE,
                 RANK_MASTER, cart_comm);
-
-    MPI_Barrier(cart_comm);
 
     if(cart_rank == RANK_MASTER) {
         printf("Gather complete.\n");
