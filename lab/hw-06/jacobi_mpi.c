@@ -148,6 +148,7 @@ void update_boundary_values(double *A, // Matrix, including boundary (ghost) lay
 
 int update_interior_values(double *out, const double *A, size_t n, double eps) {
     int converged = 1;
+    #pragma omp parallel for
     for(size_t i = 1; i < (n - 1); i++)
         for(size_t j = 1; j < (n - 1); j++) {
             out[i * n + j] = (A[(i - 1) * n + j] + A[(i + 1) * n + j]
