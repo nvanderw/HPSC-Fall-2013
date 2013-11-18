@@ -64,8 +64,11 @@ int main(int argc, char **argv) {
     /* What's the lower bound on my region? */
     double my_lower = region_size * rank + lower;
 
+    // Each process does iters / nprocs iterations
+    int my_iters = iters / nprocs;
+
     /* Integrate over that region */
-    double result = integrate(f, my_lower, region_size / iters, iters);
+    double result = integrate(f, my_lower, region_size / my_iters, my_iters);
 
     MPI_Reduce((void*) &result, (void*) &sum, 1, MPI_DOUBLE, MPI_SUM, 0,
                MPI_COMM_WORLD);
