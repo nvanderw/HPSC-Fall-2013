@@ -249,16 +249,16 @@ int main(int argc, char **argv) {
         // }
     }
 
-    for(int i = 0; i < procs_per_dim; i++) {
-        for(int j = 0; j < procs_per_dim; j++) {
-            if((coords[0] == i) && (coords[1] == j)) {
-                printf("(row, col) = (%d, %d):\n", coords[0], coords[1]);
-                
-                print_matrix(&A[0][0], window_size + 2, window_size + 2);
-            }
-            MPI_Barrier(cart_comm);
-        }
-    }
+    // for(int i = 0; i < procs_per_dim; i++) {
+    //     for(int j = 0; j < procs_per_dim; j++) {
+    //         if((coords[0] == i) && (coords[1] == j)) {
+    //             printf("(row, col) = (%d, %d):\n", coords[0], coords[1]);
+    //             
+    //             print_matrix(&A[0][0], window_size + 2, window_size + 2);
+    //         }
+    //         MPI_Barrier(cart_comm);
+    //     }
+    // }
 
 
     // Now the iterations are done and we need to gather the interior values
@@ -286,14 +286,35 @@ int main(int argc, char **argv) {
                 RANK_MASTER, cart_comm);
 
     if(cart_rank == RANK_MASTER) {
-        printf("Gather complete.\n");
-        int their_coords[2];
-        // Iterate over all interior nodes
-        for(int their_rank = 0; their_rank < nprocs; their_rank++) {
-            MPI_Cart_coords(cart_comm, their_rank, 2, their_coords);
-            printf("(%d, %d)\n", their_coords[0], their_coords[1]);
+        double result_matrix[params.n][params.n];
+
+        for(int i = 0; i < params.n; i++) {
+            result_matrix[0][i] = params.top;
+            result_matrix[params.n - 1][i] = params.bottom;
+            result_matrix[i][0] = params.left;
+            result_matrix[i][params.n - 1] = params.right;
         }
+
+
+
+        for(int M = 0; M < procs_per_dim; M++) { // Rows of processes
+            for(int N = 0; N < procs_per_dim; N++) { // Columns of processes
+                int their_coords[2] = {M, N};
+                int rank;
+                MPI_Cart_rank(cart_comm, &their_coords[0], &rank);
+   
+                double *their_interior = &all_interiors[rank * num_interiors];
+                for(int i = 0; i < num_interiors; i++) {
+                    int row = i / (n - 2);
+                    int col = i % (n - 2);
+                    result_matrix[1 + (n - 2) * M + row][1 + (n - 2) * N + col] = their_interior[i];
+                }
+            }
+        }
+
+        print_matrix(&result_matrix[0][0], params.n, params.n);
     }
+
 
     MPI_Finalize();
 }
