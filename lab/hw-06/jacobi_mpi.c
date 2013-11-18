@@ -208,10 +208,6 @@ int main(int argc, char **argv) {
     // each dimension
     unsigned int procs_per_dim = (unsigned int) sqrt((double) nprocs);
     unsigned int window_size = (params.n - 2) / procs_per_dim;
-    if(rank == RANK_MASTER) {
-        printf("Procs per dimension: %d\n", procs_per_dim);
-        printf("Window size: %d\n", window_size);
-    }
 
     int dims[2] = {procs_per_dim, procs_per_dim};
     int periods[2] = {0, 0}; // Don't wrap either dimension
@@ -242,23 +238,9 @@ int main(int argc, char **argv) {
         int all_converged;
 
         MPI_Allreduce(&converged, &all_converged, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
-        // if(all_converged) {
-        //     if(rank == RANK_MASTER)
-        //         printf("Terminated early!\n");
-        //     break;
-        // }
+        if(all_converged)
+            break;
     }
-
-    // for(int i = 0; i < procs_per_dim; i++) {
-    //     for(int j = 0; j < procs_per_dim; j++) {
-    //         if((coords[0] == i) && (coords[1] == j)) {
-    //             printf("(row, col) = (%d, %d):\n", coords[0], coords[1]);
-    //             
-    //             print_matrix(&A[0][0], window_size + 2, window_size + 2);
-    //         }
-    //         MPI_Barrier(cart_comm);
-    //     }
-    // }
 
 
     // Now the iterations are done and we need to gather the interior values
