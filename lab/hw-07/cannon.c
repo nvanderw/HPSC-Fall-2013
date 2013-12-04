@@ -10,6 +10,8 @@
 #define BLOCKSIZE 100
 #endif
 
+#define DATASET_NAME "DATASET"
+
 void usage(FILE *out, const char *argv0) {
     fprintf(out, "Usage: %s <matrixA.h5> <matrixB.h5> <matrixC.h5>\n", argv0);
 }
@@ -58,7 +60,7 @@ int main(int argc, char **argv) {
 
     // Load matrix A
     hid_t matrix_a_file = H5Fopen(argv[1], H5F_ACC_RDONLY, H5P_DEFAULT);
-    hid_t matrix_a_dataset = H5Dopen(matrix_a_file, "x", H5P_DEFAULT);
+    hid_t matrix_a_dataset = H5Dopen(matrix_a_file, DATASET_NAME, H5P_DEFAULT);
     hid_t matrix_a_space = H5Dget_space(matrix_a_dataset);
 
     hsize_t matrix_a_dims[2];
@@ -74,7 +76,7 @@ int main(int argc, char **argv) {
 
     // Load matrix B
     hid_t matrix_b_file = H5Fopen(argv[2], H5F_ACC_RDONLY, H5P_DEFAULT);
-    hid_t matrix_b_dataset = H5Dopen(matrix_b_file, "x", H5P_DEFAULT);
+    hid_t matrix_b_dataset = H5Dopen(matrix_b_file, DATASET_NAME, H5P_DEFAULT);
     hid_t matrix_b_space = H5Dget_space(matrix_b_dataset);
 
     hsize_t matrix_b_dims[2];
