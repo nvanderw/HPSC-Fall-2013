@@ -142,8 +142,8 @@ int main(int argc, char **argv) {
 
 
     // Initialize the local matrices (FIXME)
-    copy_submatrix(&local_a[0][0], local_n, &matrix_a[0][0], n, cart_row, cart_col);
-    copy_submatrix(&local_b[0][0], local_n, &matrix_b[0][0], n, cart_row, cart_col);
+    copy_submatrix(&local_a[0][0], local_n, &matrix_a[0][0], n, cart_row, (cart_row + cart_col) % procs_per_dim);
+    copy_submatrix(&local_b[0][0], local_n, &matrix_b[0][0], n, (cart_row + cart_col) % procs_per_dim, cart_col);
 
     int horiz_source, horiz_dest;
     int vert_source, vert_dest;
