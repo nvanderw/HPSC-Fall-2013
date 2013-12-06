@@ -16,7 +16,7 @@ void usage(FILE *out, const char *argv0) {
     fprintf(out, "Usage: %s <matrixA.h5> <matrixB.h5> <matrixC.h5>\n", argv0);
 }
 
-void matrix_multiply_block(double *a, double *b, double *c,
+void matrix_multiply_block(const double *a, const double *b, double *c,
                            size_t m, size_t n, size_t p,
                            size_t block_size) {
     memset(c, 0, sizeof(double) * m * p);
@@ -40,6 +40,15 @@ void print_matrix(FILE *out, const double *A, size_t m, size_t n) {
             fprintf(out, "%f ", A[i * n + j]);
         fprintf(out, "\n");
     }
+}
+
+void copy_submatrix(double *out, size_t sub_n, const double *A, size_t n, int row, int col) {
+    int k = 0;
+    for(int i = row * sub_n; i < row * sub_n + sub_n; i++)
+        for(int j = col * sub_n; j < col * sub_n + sub_n; j++) {
+            out[k] = A[i * n + j];
+            k++;
+        }
 }
 
 int main(int argc, char **argv) {
@@ -129,18 +138,46 @@ int main(int argc, char **argv) {
 
     double local_a[local_n][local_n];
     double local_b[local_n][local_n];
+    double local_c[local_n][local_n];
 
-    // Initialize our matrices (FIXME)
-    for(int i = 0; i < local_n; i++)
-        for(int j = 0; j < local_n; j++)
-            local_a[i][j] = matrix_a[local_n * cart_row + i][local_n * cart_col + j];
 
-    for(int i = 0; i < local_n; i++)
-        for(int j = 0; j < local_n; j++)
-            local_b[i][j] = matrix_b[local_n * cart_row + i][local_n * cart_col + j];
+    // Initialize the local matrices (FIXME)
+    copy_submatrix(&local_a[0][0], local_n, &matrix_a[0][0], n, cart_row, cart_col);
+    copy_submatrix(&local_b[0][0], local_n, &matrix_b[0][0], n, cart_row, cart_col);
 
-    // Run the iteration
+    int horiz_source, horiz_dest;
+    int vert_source, vert_dest;
+    MPI_Status mpi_status;
+
+    MPI_Cart_shift(comm_cart, 0, -1, &vert_source, &vert_dest);
+    MPI_Cart_shift(comm_cart, 1, -1, &horiz_source, &horiz_dest);
+
+    memset(&local_c[0][0], 0, sizeof(local_c));
+
     for(int k = 0; k < procs_per_dim; k++) {
+        double temp[local_n][local_n];
+        matrix_multiply_block(&local_a[0][0], &local_b[0][0], &temp[0][0],
+                              local_n, local_n, local_n, BLOCKSIZE);
+
+        matrix_add(&temp[0][0], &local_c[0][0], &local_c[0][0],
+                   local_n, local_n);
+
+        MPI_Sendrecv_replace(&local_a[0][0], local_n * local_n, MPI_DOUBLE,
+                             horiz_dest, 0, horiz_source, MPI_ANY_TAG,
+                             comm_cart, &mpi_status);
+
+        MPI_Sendrecv_replace(&local_b[0][0], local_n * local_n, MPI_DOUBLE,
+                             vert_dest, 0, vert_source, MPI_ANY_TAG,
+                             comm_cart, &mpi_status);
+    }
+
+    for(int r = 0; r < cart_nprocs; r++) {
+        if(cart_rank == r) {
+            printf("(%d, %d)\n", cart_row, cart_col);
+            print_matrix(stdout, &local_c[0][0], local_n, local_n);
+        }
+
+        MPI_Barrier(comm_cart);
     }
 
     H5Sclose(matrix_b_space);
