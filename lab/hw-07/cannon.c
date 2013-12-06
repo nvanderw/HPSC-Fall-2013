@@ -51,6 +51,15 @@ void copy_submatrix(double *out, size_t sub_n, const double *A, size_t n, int ro
         }
 }
 
+void set_submatrix(double *A, size_t n, const double *submatrix, size_t sub_n, int row, int col) {
+    int k = 0;
+    for(int i = row * sub_n; i < row * sub_n + sub_n; i++)
+        for(int j = col * sub_n; j < col * sub_n + sub_n; j++) {
+            A[i * n + j] = submatrix[k];
+            k++;
+        }
+}
+
 int main(int argc, char **argv) {
     int world_rank, world_nprocs;
     herr_t status;
@@ -171,13 +180,23 @@ int main(int argc, char **argv) {
                              comm_cart, &mpi_status);
     }
 
-    for(int r = 0; r < cart_nprocs; r++) {
-        if(cart_rank == r) {
-            printf("(%d, %d)\n", cart_row, cart_col);
-            print_matrix(stdout, &local_c[0][0], local_n, local_n);
+
+    // Reuse the buffers we've already allocated
+    double *matrix_c = &matrix_a[0][0];
+    double *result   = &matrix_b[0][0];
+
+    MPI_Gather(&local_c[0][0], local_n * local_n, MPI_DOUBLE, result,
+               local_n * local_n, MPI_DOUBLE, 0, comm_cart);
+
+    if(cart_rank == 0) {
+        for(int rank = 0; rank < cart_nprocs; rank++) {
+            int coords[2];
+            MPI_Cart_coords(comm_cart, rank, 2, &coords[0]);
+            set_submatrix(matrix_c, n, &result[rank * local_n * local_n], local_n,
+                        coords[0], coords[1]);
         }
 
-        MPI_Barrier(comm_cart);
+        print_matrix(stdout, matrix_c, n, n);
     }
 
     H5Sclose(matrix_b_space);
